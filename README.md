@@ -24,6 +24,7 @@ docker-compose down --rmi all -v
 ## Example conversation
 
 >ask baby raising questions
+
 Enter your message: My baby wakes up around 2 am, can you help me with that?
 
 User Query: My baby wakes up around 2 am, can you help me with that?
@@ -31,6 +32,7 @@ User Query: My baby wakes up around 2 am, can you help me with that?
 Agent Response: "It's common for babies to wake up around 2 AM for a variety of reasons. These can include hunger, natural shifts in sleep cycles and developmental leaps (like the 4-month sleep regression), teething discomfort, environmental factors (too hot, too cold, dirty diaper), overtiredness, or simply a learned sleep association. It's recommended to ensure a comfortable sleep environment, maintain a consistent bedtime routine, and address any immediate needs like feeding or changing. If you have ongoing concerns, consulting with a pediatrician is advisable."
 
 >ask daily events about baby: retrieval
+
 Enter your message: What do you know about the pee records in year 2025?
 
 User Query: What do you know about the pee records in year 2025?
@@ -53,6 +55,7 @@ User Query: Can you provide the pee records with volume large on date 2025 11.22
 Agent Response: On 2025-11-22, there was one record of a large volume pee. The record ID is 1, and it occurred at 10:28:08.
 
 >insert records
+
 Enter your message: My baby peed at 08:30
 
 User Query: My baby peed at 08:30
@@ -66,6 +69,7 @@ User Query: on 2025 11.30 and the amount is large
 Agent Response: The record has been successfully added.
 
 > delete records
+> 
 Enter your message: Can you delete the pee record with id 3?
 
 User Query: Can you delete the pee record with id 3?
