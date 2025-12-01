@@ -1,0 +1,242 @@
+# configure existing toolbox using tools.yaml
+sources:
+  my-rds-mysql:
+    kind: mysql
+    host: ${HOST}
+    port: ${PORT}
+    database: ${DATABASE}
+    user: ${USER}
+    password: ${PASSWORD}
+
+tools:
+  # Define a tool your ADK agent can call, linking it to the source
+  get-records-by-volume:
+    kind: mysql-sql      # Use the built-in MySQL SQL tool
+    source: my-rds-mysql
+    description: |
+      Retrieves all pee records with the specific amount of the pee
+      return them in the format like "* Record_Id 1: Time: 2023-08-22 23:28:08, Amount: large, Normal: Yes"
+      Example:
+      {{
+          "id": 1,
+          "pee_time": "2025-08-22 12:28:08",
+          "amount": "large",
+      }}
+      Example:
+      {{
+          "id": 5,
+          "pee_time": "2025-09-19 08:16:08",
+          "amount": "small",
+      }}
+    parameters:
+      - name: amount
+        type: string
+        description: the amount field in the table that indicates the volume of the pee, which can only be large, small or super.
+    statement: |
+      SELECT * FROM daily_event.pee_records WHERE amount = ?;
+
+  get-records-by-datetime-range:
+    kind: mysql-sql      # Use the built-in MySQL SQL tool
+    source: my-rds-mysql
+    description: |
+      Retrieves all pee records within the specified datetime range
+      return them in the format like "* Record_Id 1: Time: 2023-08-22 23:28:08, Amount: large, Normal: Yes"
+#      Example:
+#      {{
+#          "pee_time": "2025-08-22 12:28:08",
+#          "amount": "large",
+#      }}
+#      Example:
+#      {{
+#          "pee_time": "2025-09-19 08:16:08",
+#          "amount": "small",
+#      }}
+    parameters:
+      - name: start_datetime
+        type: string
+        description: the start pee time of the time range to retrieve the pee records
+      - name: end_datetime
+        type: string
+        description: the end pee time of the time range to retrieve the pee records
+    statement: |
+      SELECT * FROM daily_event.pee_records
+      WHERE pee_time BETWEEN ? AND ?
+      ORDER BY pee_time;
+
+  get-records-by-volume-and-date-range:
+    kind: mysql-sql      # Use the built-in MySQL SQL tool
+    source: my-rds-mysql
+    description: |
+      Retrieves all pee records with the specific amount of the pee within the datetime range
+      return them in the format like "* Record_Id 1: Time: 2023-08-22 23:28:08, Amount: large, Normal: Yes"
+      Example:
+      {{
+          "id": 1,
+          "pee_time": "2025-08-22 12:28:08",
+          "amount": "large",
+      }}
+      Example:
+      {{
+          "id": 5,
+          "pee_time": "2025-09-19 08:16:08",
+          "amount": "small",
+      }}
+    parameters:
+      - name: start_datetime
+        type: string
+        description: the start pee time of the time range to retrieve the pee records
+      - name: end_datetime
+        type: string
+        description: the end pee time of the time range to retrieve the pee records
+      - name: amount
+        type: string
+        description: the amount field in the table that indicates the volume of the pee, which can only be large, small or super.
+    statement: |
+      SELECT * FROM daily_event.pee_records
+      WHERE pee_time BETWEEN ? AND ?
+        AND amount = ?
+      ORDER BY pee_time DESC;
+
+  insert-record-by-volume-and-datetime:
+    kind: mysql-sql      # Use the built-in MySQL SQL tool
+    source: my-rds-mysql
+    description: |
+      save the pee record with a certain datetime and the specific amount of the pee by
+      inserting the pee record into the database
+      Example:
+      {{
+          "id": 1,
+          "pee_time": "2025-08-22 12:28:08",
+          "amount": "large",
+      }}
+      Example:
+      {{
+          "id": 5,
+          "pee_time": "2025-09-19 08:16:08",
+          "amount": "small",
+      }}
+    parameters:
+      - name: datetime
+        type: string
+        description: the pee time to be recorded
+      - name: amount
+        type: string
+        description: the amount field in the table that indicates the volume of the pee which can only be large, small or super.
+    statement: |
+      INSERT INTO daily_event.pee_records (pee_time, amount)
+      VALUES (?, ?);
+
+  delete-record-by-id:
+    kind: mysql-sql      # Use the built-in MySQL SQL tool
+    source: my-rds-mysql
+    description: |
+      delete the pee record with a certain id of the pee record from the database
+      Example:
+      {{
+          "id": 1,
+          "pee_time": "2025-08-22 12:28:08",
+          "amount": "large",
+      }}
+      Example:
+      {{
+          "id": 5,
+          "pee_time": "2025-09-19 08:16:08",
+          "amount": "small",
+      }}
+    parameters:
+      - name: id
+        type: integer
+        description: the id of the pee record
+    statement: |
+      DELETE FROM daily_event.pee_records
+      WHERE id = ?;
+
+prompts:
+  validate-datetime-range-and-volume:
+    description: |
+      You are a helpful assistant that resolves both datetime range and pee volume from user query:
+      - resolves natural language date expressions into MySQL datetime format (YYYY-MM-DD hh:mm:ss) of date range (start_datetime, end_datetime).
+        if the seconds are missing, give it a value of zeros by default.
+        if the minutes are missing, give it a value of zeros by default.
+        if the hours are missing, give it a value of zeros by default.
+        if days are missing, choose a value of one as the first day of the month for the start_datetime, choose the last day of the month for the end_datetime, 
+        if the months are missing, choose January for the start_datetime and choose December for the end_datetime
+      - validates and resolves Pee volume (can only be small, large, or super)
+    arguments:
+      - name: user_input
+        description: |
+          The user's natural language query
+          example 1:
+            can you tell me the pee records of today with pee volume large
+          example 2:
+            could you provide me the records of pee volume small in the past 7 days
+    messages:
+      - role: assistant
+        content: I got the records for you.
+      - role: user
+        content: "{{.user_input}}"
+
+  validate-datetime-and-volume:
+    description: |
+      You are a helpful assistant that resolves datetime expression and the volume of pee from user input:
+      - resolves natural language datetime expressions into MySQL datetime format (YYYY-MM-DD hh:mm:ss)
+        if the seconds are missing, give it a value of zeros by default.
+        if the minutes are missing, ask the user for a specific minute.
+        if the hours are missing, ask the user for a specific hour.
+        if days are missing, ask the user for a specific day.
+        if the months are missing, ask the user for a specific month.
+      - validates and resolves Pee volume (can only be small, large, or super)
+    arguments:
+      - name: user_input
+        description: |
+          The user's natural language query
+          example 1:
+            can you save the pee record of volume large at 2025 May 18 15:18?
+          example 2:
+            could you store the record of peeing: small volume and time is 23:00 Aug 20 2025?
+    messages:
+      - role: assistant
+        content: I saved the record for you.
+      - role: user
+        content: "{{.user_input}}"
+
+  validate-datetime-range:
+    description: |
+      You are a helpful assistant that resolves the datetime range from user query:
+      - resolves natural language date expressions into MySQL datetime format (YYYY-MM-DD hh:mm:ss) of date range (start_datetime, end_datetime).
+        if the seconds are missing, give it a value of zeros by default.
+        if the minutes are missing, give it a value of zeros by default.
+        if the hours are missing, give it a value of zeros by default.
+        if days are missing, choose a value of one as the first day of the month for the start_datetime, choose the last day of the month for the end_datetime, 
+        if the months are missing, choose January for the start_datetime and choose December for the end_datetime
+    arguments:
+      - name: user_input
+        description: |
+          The user's natural language query
+          example 1:
+            can you tell me the pee records of today?
+          example 2:
+            could you provide me the records in the past 3 days?
+    messages:
+      - role: assistant
+        content: I got the records for you.
+      - role: user
+        content: "{{.user_input}}"
+
+  validate-record-id-for-deletion:
+    description: |
+      You are a helpful assistant that resolves record id expression of pee from user input:
+      - resolves natural language of an id into an integer that matches the id format in the database
+    arguments:
+      - name: user_input
+        description: |
+          The user's natural language query
+          example 1:
+            can you delete the pee record of id five?
+          example 2:
+            could you delete the record with id 1?
+    messages:
+      - role: assistant
+        content: I deleted the record for you.
+      - role: user
+        content: "{{.user_input}}"

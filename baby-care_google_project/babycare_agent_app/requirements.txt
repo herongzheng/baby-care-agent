@@ -1,0 +1,2 @@
+google_adk==1.19.0
+dotenv==0.9.9
