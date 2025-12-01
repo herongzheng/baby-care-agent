@@ -69,7 +69,7 @@ User Query: on 2025 11.30 and the amount is large
 Agent Response: The record has been successfully added.
 
 > delete records
-> 
+ 
 Enter your message: Can you delete the pee record with id 3?
 
 User Query: Can you delete the pee record with id 3?
@@ -90,5 +90,8 @@ Agent Response: Here are the pee records from November 2025:
 * Record ID 1: Time: 2025-11-22 10:28:08, Amount: large, Normal: Yes
 * Record ID 4: Time: 2025-11-30 08:30:00, Amount: large, Normal: Yes
 
+> finish the conversation
 
+Enter your message: exit
+Ending the conversation.
 
