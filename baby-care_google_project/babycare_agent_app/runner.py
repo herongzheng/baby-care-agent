@@ -4,10 +4,10 @@ from google.adk.runners import Runner
 from google.adk.apps.app import App, EventsCompactionConfig
 
 async def setup_runner(db_agent):
-    print("Setting up session and runner...")
+
     session_service = InMemorySessionService()
     APP_NAME = "agents"
-    USER_ID = "roger"
+    USER_ID = "user_001"
     SESSION_ID = "session_001"
     session = await session_service.create_session(
         app_name=APP_NAME,
@@ -20,14 +20,14 @@ async def setup_runner(db_agent):
         app_name=APP_NAME,
         session_service=session_service
     )
-    print(f"Runner created for agent '{runner.agent.name}'.")
+
     return runner, USER_ID, session.id
 
 async def setup_session_compact_runner(db_agent):
-    print("Setting up session compaction runner...")
+
     session_service = InMemorySessionService()
     APP_NAME = "agents"
-    USER_ID = "roger"
+    USER_ID = "user_001"
     SESSION_ID = "session_001"
     session = await session_service.create_session(
         app_name=APP_NAME,
@@ -47,15 +47,15 @@ async def setup_session_compact_runner(db_agent):
         app=app_session_compact,
         session_service=session_service
     )
-    print(f"Runner created for agent '{runner.agent.name}'.")
+
     return runner, USER_ID, session.id
 
 async def setup_session_compact_auto_save_memory_runner(db_agent):
-    print("Setting up session compaction runner...")
+
     session_service = InMemorySessionService()
     memory_service = InMemoryMemoryService()
     APP_NAME = "agents"
-    USER_ID = "roger"
+    USER_ID = "user_001"
     SESSION_ID = "session_001"
     session = await session_service.create_session(
         app_name=APP_NAME,
@@ -76,5 +76,5 @@ async def setup_session_compact_auto_save_memory_runner(db_agent):
         session_service=session_service,
         memory_service=memory_service
     )
-    print(f"Runner created for agent '{runner.agent.name}'.")
+
     return runner, USER_ID, session.id

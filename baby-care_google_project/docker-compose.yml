@@ -7,8 +7,6 @@ services:
       MYSQL_DATABASE: daily_event
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PW}
-#    ports:
-#      - "${DB_PORT}:3306"
     expose:
       - "3306"
     volumes:
@@ -27,8 +25,6 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-#    ports:
-#      - "5000:5000"
     expose:
       - "5000"
     environment:

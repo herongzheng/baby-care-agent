@@ -19,9 +19,6 @@ from memory_management import auto_save_to_memory
 # from google.adk.models.lite_llm import LiteLlm
 
 def create_agent_with_mcp(mcp_toolbox_endpoint=os.getenv("TOOLBOX_URL")):
-
-    print("creating db agent...")
-
     retry_config = types.HttpRetryOptions(
         attempts=5,  # Maximum retry attempts
         exp_base=7,  # Delay multiplier
@@ -54,17 +51,14 @@ def create_agent_with_mcp(mcp_toolbox_endpoint=os.getenv("TOOLBOX_URL")):
                 connection_params=StreamableHTTPServerParams(
                     # Pass the full endpoint to the MCP Server
                     url=mcp_toolbox_endpoint,
-                    # Optionally specify a toolset name if you grouped tools in your yaml
-                    # toolset_name="my_mysql_toolset"
 
                 ),
+                # Optional: Filter which specific tools to load from the server
                 # tool_filter=['get-records-by-volume', 'get-records-by-datetime-range',
                 #              'get-records-by-volume-and-date-range',
                 #              'insert-record-by-volume-and-datetime',
                 #              'delete-record-by-id'],
             ),
-            # Optional: Filter which specific tools to load from the server
-
         ],
 
         after_model_callback=after_model_callback_async,
@@ -72,7 +66,6 @@ def create_agent_with_mcp(mcp_toolbox_endpoint=os.getenv("TOOLBOX_URL")):
         output_key="daily_event_info"
     )
 
-    print("db agent created!")
     return db_admin_agent
 
 
@@ -80,11 +73,10 @@ async def after_agent_callback_async(callback_context: CallbackContext) -> Optio
     """
     Asynchronous callback to ensure a final response exists using a temporary state flag.
     """
-    print(f"▶ after_agent_callback for agent: {callback_context.agent_name}")
 
     # Check the temporary state to see if the main agent logic set the flag
     if not callback_context.state.get("temp:response_generated", False):
-        print("[Callback] No response flagged in this turn. Providing a default.")
+        # print("[Callback] No response flagged in this turn. Providing a default.")
 
         # Return a Content object to inject this response as the final one
         return types.Content(
@@ -94,7 +86,7 @@ async def after_agent_callback_async(callback_context: CallbackContext) -> Optio
             role="model",
         )
 
-    print("[Callback] A response was flagged in this turn. Proceeding normally.")
+    # print("[Callback] A response was flagged in this turn. Proceeding normally.")
     # Return None to use the agent's original response
     return None
 
@@ -110,12 +102,7 @@ async def after_model_callback_async(callback_context: CallbackContext, llm_resp
         callback_context.state["temp:response_generated"] = True
         for part in llm_response.content.parts:
             if part.text and part.text != "None":
-                print(f"<<< DB Agent Response: {part.text}")
                 final_response = True
-            elif part.text == "None":
-                print(f"<<< DB Agent Response (non-text): {part}")
-            elif hasattr(part, "function_call"):
-                print(f"<<< DB agent Function Call: {part.function_call}")
 
         if not final_response:
             callback_context.state["temp:response_generated"] = False
@@ -124,8 +111,6 @@ async def after_model_callback_async(callback_context: CallbackContext, llm_resp
 
 
 def create_babycare_research_agent():
-    print("creating babycare research agent...")
-
     retry_config = types.HttpRetryOptions(
         attempts=5,  # Maximum retry attempts
         exp_base=7,  # Delay multiplier
@@ -143,13 +128,11 @@ def create_babycare_research_agent():
         tools=[google_search],
         output_key="babycare_research_findings"
     )
-    print("babycare research agent created!")
+
     return babycare_research_agent
 
 
 def create_babycare_summarizer_agent():
-    print("creating babycare summarizer agent...")
-
     retry_config = types.HttpRetryOptions(
         attempts=5,  # Maximum retry attempts
         exp_base=7,  # Delay multiplier
@@ -166,12 +149,11 @@ def create_babycare_summarizer_agent():
                 about babycare related query, present a concise summary as a bulleted list with 3-5 key points.""",
         output_key="babycare_summarizer_info"
     )
-    print("babycare summarizer agent created!")
+
     return babycare_summarizer_agent
 
 
 def create_main_agent(babycare_research_agent, babycare_summarizer_agent, db_agent):
-    print("creating main agent...")
     retry_config = types.HttpRetryOptions(
         attempts=5,  # Maximum retry attempts
         exp_base=7,  # Delay multiplier
@@ -206,5 +188,5 @@ def create_main_agent(babycare_research_agent, babycare_summarizer_agent, db_age
         after_agent_callback=auto_save_to_memory,
 
     )
-    print("main agent created!")
+
     return babycare_main_agent
