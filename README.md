@@ -20,6 +20,9 @@ docker-compose run --rm python-app
 
 docker-compose down --rmi all -v
 
+>if changes are made in the python application, need to remove the old python-app image first and then run
+
+docker-compose run --rm python-app
 
 ## Example conversation
 
