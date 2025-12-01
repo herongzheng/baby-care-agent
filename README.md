@@ -12,7 +12,7 @@ cd baby-care_google_project
 
 docker-compose up -d mysql toolbox
 
->when above two services are ready, bring run the application; enter **exit** if you want to quit the conversation
+>when above two services are ready, run the application; enter **exit** if you want to quit the conversation with the agent
 
 docker-compose run --rm python-app
 
